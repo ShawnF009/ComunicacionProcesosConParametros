@@ -1,7 +1,7 @@
 package Ejer1;
 
 import org.iesalandalus.programacion.utilidades.Entrada;
-import java.io.IOException;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,16 +22,23 @@ public class EjecutaValidaArgumentos {
 
             switch (opcion) {
                 case 1:
-                    ejecutarProceso("5");
+                    System.out.print("Introduce el número mayor o igual a 0: ");
+                    String numPos = Entrada.cadena(); // O puedes usar Entrada.entero() y pasarlo a String
+                    ejecutarProceso(numPos);
                     break;
                 case 2:
-                    ejecutarProceso(); // Sin argumentos
+                    // No se envía ningún argumento (null o array vacío)
+                    ejecutarProceso(null);
                     break;
                 case 3:
-                    ejecutarProceso("hola");
+                    System.out.print("Introduce la cadena de texto: ");
+                    String cadena = Entrada.cadena();
+                    ejecutarProceso(cadena);
                     break;
                 case 4:
-                    ejecutarProceso("-5");
+                    System.out.print("Introduce el número menor que 0: ");
+                    String numNeg = Entrada.cadena();
+                    ejecutarProceso(numNeg);
                     break;
                 case 0:
                     System.out.println("Saliendo...");
@@ -42,28 +49,33 @@ public class EjecutaValidaArgumentos {
         } while (opcion != 0);
     }
 
-    public static void ejecutarProceso(String... argumentos) {
+    private static void ejecutarProceso(String argumento) {
         try {
-            String rutaClases = System.getProperty("java.class.path");
+            String javaHome = System.getProperty("java.home");
+            String javaBin = javaHome + File.separator + "bin" + File.separator + "java";
+            String classpath = System.getProperty("java.class.path");
 
             List<String> comando = new ArrayList<>();
-            comando.add("java");
+            comando.add(javaBin);
             comando.add("-cp");
-            comando.add(rutaClases);
-            comando.add("ValidaArgumentos");
+            comando.add(classpath);
+            comando.add("Ejer1.validaArgumentos");
 
-            for (String arg : argumentos) {
-                comando.add(arg);
+            // Solo añadimos el argumento si realmente se ha pasado uno (para el caso de "no enviar nada")
+            if (argumento != null && !argumento.isEmpty()) {
+                comando.add(argumento);
             }
 
-            ProcessBuilder pb = new ProcessBuilder(comando);
-            Process proceso = pb.start();
+            ProcessBuilder builder = new ProcessBuilder(comando);
+            Process proceso = builder.start();
 
-            int valorSalida = proceso.waitFor();
+            // Esperamos a que termine el proceso y obtenemos su código de salida
+            int codigoSalida = proceso.waitFor();
 
-            System.out.println("Valor de salida: " + valorSalida);
+            // Mostramos el resultado tal como pide el ejemplo
+            System.out.println("Valor de salida: " + codigoSalida);
 
-            switch (valorSalida) {
+            switch (codigoSalida) {
                 case 1:
                     System.out.println("No hay argumentos...");
                     break;
@@ -77,12 +89,12 @@ public class EjecutaValidaArgumentos {
                     System.out.println("Número mayor o igual que 0...");
                     break;
                 default:
-                    System.out.println("Código de salida desconocido: " + valorSalida);
+                    System.out.println("Resultado desconocido.");
                     break;
             }
 
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+        System.err.println("Error al ejecutar el proceso: " + e.getMessage());
         }
     }
 }
