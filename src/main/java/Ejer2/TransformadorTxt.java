@@ -5,23 +5,20 @@ import java.io.InputStreamReader;
 import java.io.IOException;
 
 public class TransformadorTxt {
-
     public static void main(String[] args) {
-        try {
-            // El proceso hijo lee de su entrada estándar
-            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        BufferedReader lectorEntrada = new BufferedReader(new InputStreamReader(System.in));
+        String lineaTexto;
 
-            String linea;
-            // Lee líneas hasta que el flujo de entrada se cierre
-            while ((linea = br.readLine()) != null) {
-                // Transforma a mayúsculas y escribe en la salida estándar
-                System.out.println(linea.toUpperCase());
-                // Hacemos flush para asegurar que el padre lo reciba inmediatamente
-                System.out.flush();
+        try {
+            while ((lineaTexto = lectorEntrada.readLine()) != null) {
+                if (lineaTexto.equalsIgnoreCase("fin")) {
+                    break;
+                }
+                // Convierte la línea recibida a mayúsculas y la imprime por su salida estándar
+                System.out.println(lineaTexto.toUpperCase());
             }
-            br.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Error en el transformador: " + e.getMessage());
         }
     }
 }

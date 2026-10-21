@@ -1,63 +1,54 @@
 package Ejer2;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import org.iesalandalus.programacion.utilidades.Entrada;
+
+import java.io.*;
 
 public class LectorTxt {
-
     public static void main(String[] args) {
-        // Configuración para lanzar el proceso hijo
-        String classPath = System.getProperty("java.class.path");
-        String className = "ejercicio2.TransformadorTxt";
-        ProcessBuilder pb = new ProcessBuilder("java", "-cp", classPath, className);
+        String javaHome = System.getProperty("java.home");
+        String binarioJava = javaHome + "/bin/java";
+        String rutaClasspath = System.getProperty("java.class.path") + File.pathSeparator + "build/classes/java/main";
 
         try {
-            // Iniciamos el proceso hijo
-            Process p = pb.start();
+            ProcessBuilder constructorProceso = new ProcessBuilder(binarioJava, "-cp", rutaClasspath, "Ejer2.TransformadorTxt");
+            Process procesoHijo = constructorProceso.start();
 
-            // 1. Flujo para ENVIAR datos al hijo
-            // Obtenemos el flujo de salida conectado a la entrada estándar del subproceso
-            // Usamos PrintWriter para facilitar la escritura de líneas
-            PrintWriter pw = new PrintWriter(new OutputStreamWriter(p.getOutputStream()));
+            BufferedWriter escritorHijo = new BufferedWriter(new OutputStreamWriter(procesoHijo.getOutputStream()));
+            BufferedReader lectorHijo = new BufferedReader(new InputStreamReader(procesoHijo.getInputStream()));
 
-            // 2. Flujo para LEER datos del hijo
-            // Obtenemos el flujo de entrada conectado a la salida estándar del subproceso
-            BufferedReader brHijo = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            String lineaLeida;
 
-            // 3. Flujo para LEER datos del usuario
-            BufferedReader brUsuario = new BufferedReader(new InputStreamReader(System.in));
+            while (true) {
+                // Lectura por teclado usando la clase Entrada
+                lineaLeida = Entrada.cadena();
 
-            System.out.println("Introduce texto (escribe 'fin' para salir):");
-            String lineaUsuario;
+                if (lineaLeida == null) {
+                    continue;
+                }
 
-            while ((lineaUsuario = brUsuario.readLine()) != null) {
-                if ("fin".equalsIgnoreCase(lineaUsuario)) {
+                // Envía la línea al proceso hijo
+                escritorHijo.write(lineaLeida);
+                escritorHijo.newLine();
+                escritorHijo.flush();
+
+                // Si se introduce "fin", se finaliza la ejecución
+                if (lineaLeida.equalsIgnoreCase("fin")) {
                     break;
                 }
 
-                // Escribimos la línea en el flujo de salida del hijo
-                pw.println(lineaUsuario);
-                pw.flush(); // Aseguramos que se envíe
-
-                // Leemos la respuesta transformada del hijo
-                String lineaHijo = brHijo.readLine();
-                System.out.println(lineaHijo);
+                // Lee el resultado transformado del hijo y lo muestra por consola
+                String resultadoTransformado = lectorHijo.readLine();
+                if (resultadoTransformado != null) {
+                    System.out.println(resultadoTransformado);
+                }
             }
 
-            // Cerramos los flujos y esperamos al proceso
-            System.out.println("Finalizando...");
-            pw.close(); // Esto cerrará el System.in del hijo.
-            brHijo.close();
-            brUsuario.close();
-            p.waitFor();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+            procesoHijo.destroy();
+            procesoHijo.waitFor();
+
+        } catch (IOException | InterruptedException e) {
+            System.err.println("Error en la comunicación de procesos: " + e.getMessage());
         }
     }
 }

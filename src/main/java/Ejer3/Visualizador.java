@@ -1,36 +1,28 @@
 package Ejer3;
 
-
-
 public class Visualizador {
-
     public static void main(String[] args) {
-        // Se esperan 2 argumentos: cadena y número
-        if (args.length != 2) {
-            System.err.println("Error: Se necesitan 2 argumentos (cadena y número).");
+        // Valida que se reciba al menos un argumento y que la cadena no esté vacía
+        if (args.length < 1 || args[0] == null || args[0].trim().isEmpty()) {
+            System.out.println("Cadena introducida vacía");
             System.exit(1);
-            return;
         }
 
-        String cadena = args[0];
-        int veces;
+        String cadenaTexto = args[0];
+        int numeroVeces = 5; // Valor por defecto
 
-        if (cadena.isEmpty()) {
-            System.err.println("Cadena introducida vacia");
-            System.exit(1); // Finaliza con código 1 si la cadena está vacía
-            return;
+        if (args.length >= 2) {
+            try {
+                numeroVeces = Integer.parseInt(args[1]);
+            } catch (NumberFormatException e) {
+                System.exit(1);
+            }
         }
 
-        try {
-            veces = Integer.parseInt(args[1]);
-        } catch (NumberFormatException e) {
-            System.err.println("Error: El segundo argumento debe ser un número.");
-            System.exit(1);
-            return;
+        for (int i = 1; i <= numeroVeces; i++) {
+            System.out.println(i + ". " + cadenaTexto);
         }
 
-        for (int i = 1; i <= veces; i++) {
-            System.out.println(i + ". " + cadena);
-        }
+        System.exit(0);
     }
 }

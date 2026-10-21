@@ -1,39 +1,42 @@
 package Ejer1;
 
+import org.iesalandalus.programacion.utilidades.Entrada;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class EjecutaValidaArgumentos {
 
-    private static void ejecutarProceso(String... args) {
-        // Obtenemos la ruta al classpath actual de Java
-        String classPath = System.getProperty("java.class.path");
-        String className = "ejercicio1.ValidaArgumentos";
+    public static void main(String[] args) {
+        System.out.print("Introduce un argumento (cadena o número): ");
+        String argumentoUsuario = Entrada.cadena();
+
+        String javaHome = System.getProperty("java.home");
+        String binarioJava = javaHome + "/bin/java";
+
+        // Añadimos la carpeta de clases compiladas al classpath actual
+        String rutaClasspath = System.getProperty("java.class.path") + File.pathSeparator + "build/classes/java/main";
 
         try {
-            // Creamos una lista para los comandos
-            List<String> command = new ArrayList<>();
-            command.add("java");
-            command.add("-cp");
-            command.add(classPath);
-            command.add(className);
-            // Añadimos los argumentos dinámicos
-            command.addAll(Arrays.asList(args));
+            List<String> comando = new ArrayList<>();
+            comando.add(binarioJava);
+            comando.add("-cp");
+            comando.add(rutaClasspath);
+            comando.add("Ejer1.ValidaArgumentos");
 
-            // Creamos el ProcessBuilder
-            ProcessBuilder pb = new ProcessBuilder(command);
+            // Si el usuario introduce algo, lo añadimos como argumento al proceso hijo
+            if (argumentoUsuario != null && !argumentoUsuario.trim().isEmpty()) {
+                comando.add(argumentoUsuario.trim());
+            }
 
-            // Iniciamos el proceso
-            Process p = pb.start();
-            // Esperamos a que el proceso termine y obtenemos su código de salida
-            int exitVal = p.waitFor();
+            ProcessBuilder constructorProceso = new ProcessBuilder(comando);
+            Process procesoValidador = constructorProceso.start();
+            int codigoSalida = procesoValidador.waitFor();
 
-            System.out.println("Valor de salida: " + exitVal);
+            System.out.println("Valor de salida: " + codigoSalida);
 
-            // Mostramos el mensaje correspondiente
-            switch (exitVal) {
+            switch (codigoSalida) {
                 case 1:
                     System.out.println("No hay argumentos...");
                     break;
@@ -47,34 +50,12 @@ public class EjecutaValidaArgumentos {
                     System.out.println("Número mayor o igual que 0...");
                     break;
                 default:
-                    System.out.println("Valor de salida desconocido.");
+                    System.out.println("Situación desconocida...");
+                    break;
             }
 
-       } catch (IOException e) { //
-            System.err.println("Error de E/S al ejecutar el proceso.");
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            System.err.println("El proceso fue interrumpido.");
-            Thread.currentThread().interrupt();
+        } catch (IOException | InterruptedException e) {
+            System.err.println("Error durante la ejecución del proceso: " + e.getMessage());
         }
-        System.out.println("-------------------------------------");
-    }
-
-    public static void main(String[] args) {
-        // Caso 1: Número mayor o igual a 0
-        System.out.println("Ejecutando con argumento '10':");
-        ejecutarProceso("10");
-
-        // Caso 2: Sin argumentos
-        System.out.println("Ejecutando sin argumentos:");
-        ejecutarProceso();
-
-        // Caso 3: Cadena
-        System.out.println("Ejecutando con argumento 'Hola':");
-        ejecutarProceso("Hola");
-
-        // Caso 4: Número menor que 0
-        System.out.println("Ejecutando con argumento '-5':");
-        ejecutarProceso("-5");
     }
 }

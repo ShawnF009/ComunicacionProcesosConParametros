@@ -1,59 +1,53 @@
 package Ejer4;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import org.iesalandalus.programacion.utilidades.Entrada;
+
+import java.io.*;
 
 public class GeneraAleatorios {
-
     public static void main(String[] args) {
-        String classPath = System.getProperty("java.class.path");
-        String className = "ejercicio4.Aleatorios";
-        ProcessBuilder pb = new ProcessBuilder("java", "-cp", classPath, className);
+        String javaHome = System.getProperty("java.home");
+        String binarioJava = javaHome + "/bin/java";
+        String rutaClasspath = System.getProperty("java.class.path") + File.pathSeparator + "build/classes/java/main";
 
         try {
-            Process p = pb.start();
+            ProcessBuilder constructorProceso = new ProcessBuilder(binarioJava, "-cp", rutaClasspath, "Ejer4.Aleatorios");
+            Process procesoHijo = constructorProceso.start();
 
-            // Flujo para ENVIAR peticiones al hijo
-            PrintWriter peticionHijo = new PrintWriter(p.getOutputStream());
+            BufferedWriter escritorHijo = new BufferedWriter(new OutputStreamWriter(procesoHijo.getOutputStream()));
+            BufferedReader lectorHijo = new BufferedReader(new InputStreamReader(procesoHijo.getInputStream()));
 
-            // Flujo para LEER respuestas del hijo
-            BufferedReader respuestaHijo = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            String entradaUsuario;
 
-            // Flujo para LEER al usuario
-            BufferedReader brUsuario = new BufferedReader(new InputStreamReader(System.in));
+            while (true) {
+                // Lectura por teclado usando la clase Entrada
+                entradaUsuario = Entrada.cadena();
 
-            System.out.println("Escribe cualquier cosa para generar un aleatorio (o 'fin' para salir):");
-            String lineaUsuario;
+                if (entradaUsuario == null) {
+                    continue;
+                }
 
-            while ((lineaUsuario = brUsuario.readLine()) != null) {
-                if ("fin".equalsIgnoreCase(lineaUsuario)) {
+                // Envía la petición al proceso hijo
+                escritorHijo.write(entradaUsuario);
+                escritorHijo.newLine();
+                escritorHijo.flush();
+
+                if (entradaUsuario.equalsIgnoreCase("fin")) {
                     break;
                 }
 
-                // 1. Enviamos una "petición" al hijo
-                peticionHijo.println("genera"); // El contenido no importa, solo que es una línea
-                peticionHijo.flush();
-
-                // 2. Leemos la respuesta del hijo
-                String numAleatorio = respuestaHijo.readLine();
-                System.out.println(numAleatorio);
+                // Lee y muestra el número aleatorio devuelto por el hijo
+                String numeroGenerado = lectorHijo.readLine();
+                if (numeroGenerado != null) {
+                    System.out.println(numeroGenerado);
+                }
             }
 
-            // Finalizar
-            System.out.println("Finalizando...");
-            // Cerramos el flujo de peticiones. El readLine() del hijo devolverá null.
-            peticionHijo.close();
+            procesoHijo.destroy();
+            procesoHijo.waitFor();
 
-            respuestaHijo.close();
-            brUsuario.close();
-            p.waitFor();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+        } catch (IOException | InterruptedException e) {
+            System.err.println("Error en la gestión de procesos aleatorios: " + e.getMessage());
         }
     }
 }

@@ -1,47 +1,45 @@
 package Ejer3;
 
+import org.iesalandalus.programacion.utilidades.Entrada;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class EjecutaVisualizador {
-
     public static void main(String[] args) {
-        // Leer la cadena del usuario
-        BufferedReader brUsuario = new BufferedReader(new InputStreamReader(System.in));
         System.out.print("Introduce una cadena: ");
+        String cadenaUsuario = Entrada.cadena();
+
+        String javaHome = System.getProperty("java.home");
+        String binarioJava = javaHome + "/bin/java";
+        String rutaClasspath = System.getProperty("java.class.path") + File.pathSeparator + "build/classes/java/main";
 
         try {
-            String cadena = brUsuario.readLine();
+            ProcessBuilder constructorProceso = new ProcessBuilder(
+                    binarioJava, "-cp", rutaClasspath, "Ejer3.Visualizador", cadenaUsuario, "5"
+            );
+            Process procesoHijo = constructorProceso.start();
 
-            // Configurar el ProcessBuilder
-            String classPath = System.getProperty("java.class.path");
-            String className = "ejercicio3.Visualizador";
+            BufferedReader lectorHijo = new BufferedReader(new InputStreamReader(procesoHijo.getInputStream()));
+            String lineaSalida;
 
-            // Pasamos la cadena y el número "5" como argumentos
-            ProcessBuilder pb = new ProcessBuilder("java", "-cp", classPath, className, cadena, "5");
+            while ((lineaSalida = lectorHijo.readLine()) != null) {
+                System.out.println(lineaSalida);
+            }
 
-            // Hacemos que la E/S del hijo se conecte a la del padre
-            // La salida y error  del hijo irán a la consola del padre.
-            pb.inheritIO();
+            int codigoSalida = procesoHijo.waitFor();
+            System.out.println("Valor de salida: " + codigoSalida);
 
-            // Iniciar y esperar
-            Process p = pb.start();
-            int exitVal = p.waitFor();
-
-            // Imprimir resultado
-            System.out.println("Valor de salida: " + exitVal);
-            if (exitVal == 0) { //
+            if (codigoSalida == 0) {
                 System.out.println("Final Correcto");
             } else {
                 System.out.println("Final Incorrecto");
             }
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+        } catch (IOException | InterruptedException e) {
+            System.err.println("Error al ejecutar el visualizador: " + e.getMessage());
         }
     }
 }
