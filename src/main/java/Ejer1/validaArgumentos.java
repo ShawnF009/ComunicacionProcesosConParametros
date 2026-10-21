@@ -1,33 +1,28 @@
 package Ejer1;
 
-public class validaArgumentos {
+public class ValidaArgumentos {
+
     public static void main(String[] args) {
-        // 1. Si no se envían argumentos
-        if (args.length == 0) {
-            System.out.println("No hay argumentos...");
+
+        // 1. Si el número de argumentos es < 1
+        if (args.length < 1) {
             System.exit(1);
         }
 
-        String arg = args[0];
-
         try {
-            // Intentamos parsear el argumento como un número entero
-            int numero = Integer.parseInt(arg);
+            // Intenta convertir el primer argumento a número
+            int num = Integer.parseInt(args[0]);
 
-            // 2. Si es un número menor que 0
-            if (numero < 0) {
-                System.out.println("Número menor que 0...");
+            // 3. Si es un número entero menor que 0
+            if (num < 0) {
                 System.exit(3);
             }
-            // 3. Si es un número mayor o igual que 0
-            else {
-                System.out.println("Número mayor o igual que 0...");
-                System.exit(4);
-            }
+
+            // 4. Si es un número >= 0
+            System.exit(4);
 
         } catch (NumberFormatException e) {
-            // 4. Si no se puede convertir a número, significa que es una cadena de texto
-            System.out.println("Es una cadena...");
+            // 2. Si el argumento es una cadena (no se pudo convertir a número)
             System.exit(2);
         }
     }
